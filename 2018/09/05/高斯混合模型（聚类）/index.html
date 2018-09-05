@@ -7,7 +7,7 @@
 
 <html class="theme-next gemini use-motion" lang="">
 <head>
-  <meta charset="UTF-8"/>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
 <meta http-equiv="X-UA-Compatible" content="IE=edge" />
 <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
 <meta name="theme-color" content="#222">
@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="技术输出">
 <meta property="og:description" content="K-means 聚类 对每个点，确定离它最近的聚类中心  更新聚类中心（因为每个类里有新的点进出，所以中心会变化） 重复1、2直到收敛。算法收敛到类内距离和的总和最小。   K-means 软版本：高斯混合模型已知总体样本符合高斯混合模型，即 $y_1, y_2, …,y_n$ 由K类组成，每类都符合高斯分布。这些观测数据的产生是这样的：首先依概率$\alpha_k$选择第$k$ 个高斯分布分模型">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-09-05T08:32:20.907Z">
+<meta property="og:updated_time" content="2018-09-05T09:07:39.617Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="高斯混合模型（聚类）">
 <meta name="twitter:description" content="K-means 聚类 对每个点，确定离它最近的聚类中心  更新聚类中心（因为每个类里有新的点进出，所以中心会变化） 重复1、2直到收敛。算法收敛到类内距离和的总和最小。   K-means 软版本：高斯混合模型已知总体样本符合高斯混合模型，即 $y_1, y_2, …,y_n$ 由K类组成，每类都符合高斯分布。这些观测数据的产生是这样的：首先依概率$\alpha_k$选择第$k$ 个高斯分布分模型">
@@ -126,7 +126,7 @@
 
 
 
-  <title>高斯混合模型（聚类） | 技术输出</title>
+  <title>高斯混合模型（聚类） | 技术输出</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
@@ -145,7 +145,7 @@
     
   
 
-  <div class="container sidebar-position-left page-post-detail">
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
     <div class="headband"></div>
 
     <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
@@ -762,6 +762,28 @@
   
 
   
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
 
   
 
