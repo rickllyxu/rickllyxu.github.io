@@ -289,6 +289,149 @@
   
   
   <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/05/高斯混合模型（聚类）/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="rickllyxu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术输出">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">
+                
+                <a class="post-title-link" href="/2018/09/05/高斯混合模型（聚类）/" itemprop="url">高斯混合模型（聚类）</a></h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-09-05T16:30:21+08:00">
+                2018-09-05
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        
+          
+            <h1 id="K-means-聚类"><a href="#K-means-聚类" class="headerlink" title="K-means 聚类"></a>K-means 聚类</h1><ol>
+<li><p>对每个点，确定离它最近的聚类中心</p>
+</li>
+<li><p>更新聚类中心（因为每个类里有新的点进出，所以中心会变化）</p>
+<p>重复1、2直到收敛。算法收敛到类内距离和的总和最小。</p>
+</li>
+</ol>
+<h1 id="K-means-软版本：高斯混合模型"><a href="#K-means-软版本：高斯混合模型" class="headerlink" title="K-means 软版本：高斯混合模型"></a>K-means 软版本：高斯混合模型</h1><p>已知总体样本符合高斯混合模型，即 $y_1, y_2, …,y_n$ 由K类组成，每类都符合高斯分布。这些观测数据的产生是这样的：首先依概率$\alpha_k$选择第$k$ 个高斯分布分模型 $\phi(y|\theta_k)$ ；然后依第$k$个分模型的概率分布 $\phi(y|\theta_k)$ 生成观测样本 $y_j$ . 即：<br>$$<br>P(y|\theta) = \sum_{k=1}^{K} \alpha_k \phi(y|\theta_k)<br>$$</p>
+<p>我们可以使用EM算法估计出参数$\theta=(\alpha_1, \alpha_2,…,\alpha_K; \theta_1, \theta_2, …, \theta_K )$ ，再用后验概率判断样本 $y_j, j=1,…,n$ 来自于哪一类，即：<br>$$<br>P(w_k|y_j, \theta) = \frac{p(y_j, w_k | \theta_k)}{p(y_j|\theta_k)}<br>$$<br>即完成聚类过程。</p>
+<h1 id="EM-算法"><a href="#EM-算法" class="headerlink" title="EM 算法"></a>EM 算法</h1><ul>
+<li>假定已观测数据是 ${z}$ ，似然函数为 $l(\theta; z)$ 关于参数 $\theta$.</li>
+<li>设隐变量或缺失数据为 $z^m$，那么完整数据为 $t = (z, z^m)$，其似然函数为 $l_0(\theta, t)$，$l_0$ 是基于完整密度的似然函数。</li>
+</ul>
+<p>EM算法流程：</p>
+<ol>
+<li><p>从初始化的参数 $\theta^{(0)}$ 出发</p>
+</li>
+<li><p>E步：计算关于参数 $\theta^{‘}$ 的函数，<br>$$<br>Q(\theta^{‘},\theta^{(j)}) = E(l_0(\theta^{‘}; t)|z, \theta^{(j)})<br>$$</p>
+</li>
+<li><p>M步：最大化 $Q(\theta^{‘},\theta^{(j)})$，得到 $\theta^{(j+1)}$</p>
+</li>
+<li><p>重复2、3步。</p>
+</li>
+</ol>
+
+          
+        
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+
+      
+
+      
+
+      
+      
+        <div class="post-eof"></div>
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+    
+      
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
     <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/09/04/CTR预估：从入门到前沿方法/">
 
     <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
@@ -570,7 +713,7 @@
               
                 <a href="/archives/">
               
-                  <span class="site-state-item-count">2</span>
+                  <span class="site-state-item-count">3</span>
                   <span class="site-state-item-name">posts</span>
                 </a>
               </div>
