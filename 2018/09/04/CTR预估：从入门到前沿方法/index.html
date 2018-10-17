@@ -87,7 +87,7 @@
 <meta property="og:site_name" content="技术输出">
 <meta property="og:description" content="这篇博文将讲述CTR预估的方法、模型。文中将讲述LR、GBDT、FM、FM+DNN等各类模型及其对应的优化方法、代码实现，涵盖入门级方法到前沿方法。同时会给出相应的 PyTorch 实现。 并且，本文将通过FM模型推演出各深度CTR模型。 Motivation初衷：在学习了好些CTR预估的博客、论文后，自觉有必要将它们整理，并且使用C++或基于Pytorch来实现一下，以加深自己的理解，并期望能帮">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-17T03:03:03.772Z">
+<meta property="og:updated_time" content="2018-10-17T03:35:14.519Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CTR预估：从入门到前沿方法">
 <meta name="twitter:description" content="这篇博文将讲述CTR预估的方法、模型。文中将讲述LR、GBDT、FM、FM+DNN等各类模型及其对应的优化方法、代码实现，涵盖入门级方法到前沿方法。同时会给出相应的 PyTorch 实现。 并且，本文将通过FM模型推演出各深度CTR模型。 Motivation初衷：在学习了好些CTR预估的博客、论文后，自觉有必要将它们整理，并且使用C++或基于Pytorch来实现一下，以加深自己的理解，并期望能帮">
@@ -768,7 +768,7 @@
   
 
 
-  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
 
 
 
@@ -821,6 +821,26 @@
   
 
   
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
   
 
 
