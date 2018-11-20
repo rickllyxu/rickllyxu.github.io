@@ -68,7 +68,7 @@
 
 
 
-  <meta name="keywords" content="CTR,机器学习,深度模型," />
+  <meta name="keywords" content="机器学习,CTR,深度模型," />
 
 
 
@@ -80,14 +80,14 @@
 
 
 <meta name="description" content="这篇博文将讲述CTR预估的方法、模型。文中将讲述LR、GBDT、FM、FM+DNN等各类模型及其对应的优化方法、代码实现，涵盖入门级方法到前沿方法。同时会给出相应的 PyTorch 实现。 并且，本文将通过FM模型推演出各深度CTR模型。 Motivation初衷：在学习了好些CTR预估的博客、论文后，自觉有必要将它们整理，并且使用C++或基于Pytorch来实现一下，以加深自己的理解，并期望能帮">
-<meta name="keywords" content="CTR,机器学习,深度模型">
+<meta name="keywords" content="机器学习,CTR,深度模型">
 <meta property="og:type" content="article">
 <meta property="og:title" content="CTR预估：从入门到前沿方法">
 <meta property="og:url" content="http://yoursite.com/2018/09/04/CTR预估：从入门到前沿方法/index.html">
 <meta property="og:site_name" content="技术输出">
 <meta property="og:description" content="这篇博文将讲述CTR预估的方法、模型。文中将讲述LR、GBDT、FM、FM+DNN等各类模型及其对应的优化方法、代码实现，涵盖入门级方法到前沿方法。同时会给出相应的 PyTorch 实现。 并且，本文将通过FM模型推演出各深度CTR模型。 Motivation初衷：在学习了好些CTR预估的博客、论文后，自觉有必要将它们整理，并且使用C++或基于Pytorch来实现一下，以加深自己的理解，并期望能帮">
 <meta property="og:locale" content="default">
-<meta property="og:updated_time" content="2018-10-17T06:18:31.993Z">
+<meta property="og:updated_time" content="2018-11-19T14:38:06.247Z">
 <meta name="twitter:card" content="summary">
 <meta name="twitter:title" content="CTR预估：从入门到前沿方法">
 <meta name="twitter:description" content="这篇博文将讲述CTR预估的方法、模型。文中将讲述LR、GBDT、FM、FM+DNN等各类模型及其对应的优化方法、代码实现，涵盖入门级方法到前沿方法。同时会给出相应的 PyTorch 实现。 并且，本文将通过FM模型推演出各深度CTR模型。 Motivation初衷：在学习了好些CTR预估的博客、论文后，自觉有必要将它们整理，并且使用C++或基于Pytorch来实现一下，以加深自己的理解，并期望能帮">
@@ -366,7 +366,8 @@
 <p>目的：整理 CTR 预估的经典至前沿方法，希冀自己和同学习的朋友能掌握其原理及其实现。</p>
 <p>Github链接：</p>
 <p>致谢：本文写作严重参考了Reference中1、2的内容。向原作者致谢。</p>
-<h1 id="问题阐述"><a href="#问题阐述" class="headerlink" title="问题阐述"></a>问题阐述</h1><h1 id="方法介绍"><a href="#方法介绍" class="headerlink" title="方法介绍"></a>方法介绍</h1><h2 id="Logistic-Regression"><a href="#Logistic-Regression" class="headerlink" title="Logistic Regression"></a>Logistic Regression</h2><h3 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h3><p>LR，逻辑斯蒂回归模型，是分类模型，由条件概率分布$P(y|\vec x)$表示：</p>
+<h1 id="问题阐述"><a href="#问题阐述" class="headerlink" title="问题阐述"></a>问题阐述</h1><h1 id="方法介绍"><a href="#方法介绍" class="headerlink" title="方法介绍"></a>方法介绍</h1><h2 id="Logistic-Regression"><a href="#Logistic-Regression" class="headerlink" title="Logistic Regression"></a>Logistic Regression</h2><h3 id="引入"><a href="#引入" class="headerlink" title="引入"></a>引入</h3><p>logistic regression (lr)，是CTR预估中的传统方法，他的优势在于，扩展性极强，同时计算量较其他模型小得多，劣势在于，很依赖于人工特征工程。</p>
+<h3 id="模型"><a href="#模型" class="headerlink" title="模型"></a>模型</h3><p>LR，逻辑斯蒂回归模型，是分类模型，由条件概率分布$P(y|\vec x)$表示：</p>
 <p>$$<br>P(y=\pm1|w,x) = \frac{exp(w^T x)}{1 + exp(-y\ w^T x)}<br>\label{eq: lr_model}<br>\tag{1}<br>$$</p>
 <p>这里，标签使用正负1表示，以便用一个式子来表示这个模型。</p>
 <h3 id="策略"><a href="#策略" class="headerlink" title="策略"></a>策略</h3><p>策略是指，按照什么样的准则学习或者选择最优的模型。这里指该模型对应的优化函数，通过该优化函数，可以找到该模型在给定输入空间下的最优模型（即找到最优的参数设置）。</p>
@@ -375,8 +376,51 @@
 <p><strong>第二种：</strong>由于这是分类问题，<strong>本可以</strong>使用交叉熵损失函数作为优化函数。<br>$$<br>\min_w \sum_{i=1}^{n} -(y_i \log P(y_i | w, x_i) + (1-y_i) \log (1-P(y_i | w, x_i)))<br>\tag{3}<br>\label{eq: crossEntropy}<br>$$<br>然而$\eqref{eq: crossEntropy}$式适用于$\text{y in } {0, 1}$的情况。</p>
 <p>针对逻辑斯蒂回归，我们往往使用<strong>logistic loss函数</strong>，形式如下：<br>$$<br>\min_w \sum_{i=1}^{n} \log(1+exp(-y_i \phi_{LM}(w, x_i))) + \Omega(w)<br>\tag{4}<br>\\<br>\text{第一项（即累加项）是每个样本的logistic损失函数的累加，第二项是正则项（l1或l2正则）}<br>\\<br>\text{Here, y in {-1, 1} and }\phi_{LM}(w, x)=&lt;w, x&gt;<br>\label{eq: logloss}<br>$$<br>这个损失函数为何正确呢？这个损失函数是可以导出极大似然函数即$\eqref{eq: siran}$式的。推导如下：<br>$$<br>\text{for each sample: }<br>L(y, \phi_{LM}(x)) = \log(1+exp(-y \phi_{LM}(w, x))) = \log \frac{1}{P(y|w, x)}<br>$$<br>$$<br>\begin{aligned}<br>\arg \min_w \sum_iL(y_i, \phi_{LM}(x_i))<br>&amp;= \arg \min_w \sum_i \log \frac{1}{P(y_i|w, x_i)}\\<br>&amp;= \arg\max_w \sum_i \log {P(y_i|w, x_i)} \\<br>&amp;= \arg\max_w \prod_i P(y_i|w, x_i) = \eqref{eq: siran}\text{式，似然函数}<br>\end{aligned}<br>$$<br>因此该损失函数是正确的。如何最小化$\eqref{eq: logloss}$式呢？可采用随机梯度下降等方法，同样，接下来的算法部分会统一讲。</p>
 <h3 id="算法"><a href="#算法" class="headerlink" title="算法"></a>算法</h3><p>最优化的算法包括随机梯度下降（SGD）、拟牛顿法（L-BFGS）等。他们均可以用于求convex Function的最值。</p>
-<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><p>代码请参考<code>sklearn/linear_model/logistic.py</code>. (to read)</p>
-<h2 id="Gradient-Boosting-Decision-Tree"><a href="#Gradient-Boosting-Decision-Tree" class="headerlink" title="Gradient Boosting Decision Tree"></a>Gradient Boosting Decision Tree</h2><h3 id="Decision-Tree"><a href="#Decision-Tree" class="headerlink" title="Decision Tree"></a>Decision Tree</h3><h3 id="classical-framework-XGBoost"><a href="#classical-framework-XGBoost" class="headerlink" title="classical framework: XGBoost"></a>classical framework: XGBoost</h3><h3 id="classical-framework-LightGBM"><a href="#classical-framework-LightGBM" class="headerlink" title="classical framework: LightGBM"></a>classical framework: LightGBM</h3><h2 id="华丽分割线：深度模型"><a href="#华丽分割线：深度模型" class="headerlink" title="华丽分割线：深度模型"></a>华丽分割线：深度模型</h2><ol start="2">
+<h3 id="代码实现"><a href="#代码实现" class="headerlink" title="代码实现"></a>代码实现</h3><figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br></pre></td><td class="code"><pre><span class="line"><span class="comment"># 实现思路：</span></span><br><span class="line"><span class="comment"># 训练阶段（fit）：通过优化算法，不断最小化logistic loss损失函数即（4）式，获得参数 w 和偏置项 b。</span></span><br><span class="line"><span class="comment"># 预测阶段（predict）：带入模型公式（1）中，获得对该样本在-1和1两种标签下的概率值，根据阈值判出标签。</span></span><br></pre></td></tr></table></figure>
+<p>具体代码实现，参考<code>sklearn/linear_model/logistic.py</code>.</p>
+<h2 id="GBDT方法"><a href="#GBDT方法" class="headerlink" title="GBDT方法"></a>GBDT方法</h2><h3 id="引入-1"><a href="#引入-1" class="headerlink" title="引入"></a>引入</h3><p>GBDT是效果最棒的机器学习模型，也应用于ctr预估中。本小节的思路是，先讲解决策树（decision tree），接着是提升树（boosted tree），做完以上铺垫后，最后讲解梯度提升模型和梯度提升决策树，并以sklearn.ensemble、xgboost、lightgbm作为代码样例讲解。</p>
+<h3 id="Decision-Tree"><a href="#Decision-Tree" class="headerlink" title="Decision Tree"></a>Decision Tree</h3><h4 id="特征选择与信息增益"><a href="#特征选择与信息增益" class="headerlink" title="特征选择与信息增益"></a>特征选择与信息增益</h4><p>特征选择的准则是信息增益或信息增益比。</p>
+<p>信息增益是指，得知特征X的信息而使类Y的信息的不确定性减小的程度。$g(D, A) = H(D) - H(D|A)$ 表示，由于特征 $A$ 而使得对数据集 $D$ 的分类的不确定性减少的程度。显然信息增益大的特征具有更强的分类能力。</p>
+<p>附上熵的知识点：</p>
+<ol>
+<li>entropy 表示随机变量不确定性的度量。</li>
+<li>设$X$ 是一个取有限个值的离散随机变量，其概率分布为 $P(X=x_i) = p_i$, 则随机变量 $X$ 的熵的定义为 $H(X) = - \sum_{i=1}^n p_i \log p_i$</li>
+<li>条件熵 $H(Y|X)$ 表示在已知随机变量 $X$ 的条件下随机变量 $Y$ 的不确定性。$H(Y|X) = \sum_{i=1}^{n} p_i H(Y|X=x_i)$ </li>
+<li>设有 $K$个类，每个类记为 $C_k$，则 $H(D) = - \sum _{k=1} ^K \frac{|C_k|}{|D|} \log_2 \frac{|C_k|}{|D|}$</li>
+<li>设特征$A$ 有 $n$ 个不同的取值，根据特征 $A$ 的取值将 $D$ 划分为 $n$ 个子集 $D_1, D_2, …, D_n$。则 $H(D|A) = \sum_{i=1}^n \frac{|D_i|}{|D|} H(D_i) = - \sum_{i=1}^n \frac{|D_i|}{|D|} \sum <em>{k=1}^K \frac{|D</em>{ik}|}{|D_i|} \log_2 \frac{|C_{ik}|}{|D_i|}$  </li>
+</ol>
+<h4 id="决策树生成"><a href="#决策树生成" class="headerlink" title="决策树生成"></a>决策树生成</h4><p>决策树应用信息增益（比）准则选择特征，将其作为分裂点。</p>
+<p>具体流程：从根节点开始，对每个叶子节点计算所有可能特征的信息增益，选择增益最大的特征作为该节点的特征，由该特征的不同取值建立子节点。递归调用上述方法，直到所有特征增益均很小或无特征可以选择为止。</p>
+<h4 id="CART算法"><a href="#CART算法" class="headerlink" title="CART算法"></a>CART算法</h4><h4 id="代码实现-1"><a href="#代码实现-1" class="headerlink" title="代码实现"></a>代码实现</h4><p>参考<a href="https://github.com/mlpack/mlpack" target="_blank" rel="noopener">mlpack/src/mlpack/methods</a>下的<code>/decision_stump</code> 和<code>/decision_tree</code>. </p>
+<h5 id="决策桩（decision-stump）代码实现"><a href="#决策桩（decision-stump）代码实现" class="headerlink" title="决策桩（decision stump）代码实现"></a>决策桩（decision stump）代码实现</h5><p>决策桩，是指只有一个节点的决策树，即根节点。实现决策桩的重点是，明白它是怎么选择分裂点的。</p>
+<figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br><span class="line">18</span><br><span class="line">19</span><br><span class="line">20</span><br></pre></td><td class="code"><pre><span class="line"><span class="string">'''训练阶段：'''</span></span><br><span class="line"><span class="comment"># 计算 </span></span><br><span class="line"><span class="comment"># H(D) = -\sum (|C_k|/|D|) * log2 (|C_k|/|D|), here sum(|C_k|) = |D|</span></span><br><span class="line">rootEntropy = CalculateEntropy(labels, weights)</span><br><span class="line"><span class="comment"># 遍历当前节点中给定样本集的每一维特征，如果这一维特征的取值并非恒定，那么将它看做潜在的分裂特征，这时需计算它的条件熵 H(D|A) = -\sum (|D_i|/|D|) H(D_i)</span></span><br><span class="line">num_features = X.shape[<span class="number">1</span>]</span><br><span class="line">num_samples = X.shape[<span class="number">0</span>]</span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> range(num_features):</span><br><span class="line">	gain = rootEntropy - CalculateConditionEntropy(X.columns.get(i), labels, weights)</span><br><span class="line">    <span class="keyword">if</span> bestGain &lt; gain:</span><br><span class="line">        bestGain = gain</span><br><span class="line">        bestSplitDim = i</span><br><span class="line"><span class="comment"># 选择能产生最大收益的特征。然后根据该特征的值，分裂出n个桶（假定该特征取值有 a_1, a_2, ..., a_n，那么n个桶的值应该是：x &lt; a_2, a_2 &lt;= x &lt; a_3, ..., a_&#123;n-1&#125; &lt;= x &lt; a_n, a_n &lt;= x即共n个桶。预测时需要看新到样本的值落在哪个桶里。），并且决定每个桶最后的label应该是多少（哪个类占大多数就归属哪个类）。</span></span><br><span class="line"><span class="keyword">for</span> a <span class="keyword">in</span> unique(A):</span><br><span class="line">    split.append(a)</span><br><span class="line">    binLabels.append(most_freq_label_under_this_value(a, labels, weights))</span><br><span class="line"><span class="string">'''预测阶段'''</span></span><br><span class="line"><span class="comment"># 新到样本假定为 x</span></span><br><span class="line">val = x[bestSplitDim]</span><br><span class="line">localte_which_bin_to_contain_val(val, split, binLabels)</span><br></pre></td></tr></table></figure>
+<h5 id="决策树代码实现"><a href="#决策树代码实现" class="headerlink" title="决策树代码实现"></a>决策树代码实现</h5><h3 id="提升树"><a href="#提升树" class="headerlink" title="提升树"></a>提升树</h3><h3 id="梯度提升模型"><a href="#梯度提升模型" class="headerlink" title="梯度提升模型"></a>梯度提升模型</h3><h3 id="Intro"><a href="#Intro" class="headerlink" title="Intro"></a>Intro</h3><blockquote>
+<p>The following refer Wikipedia #Gradient_boosting</p>
+</blockquote>
+<p>boosting can be interpreted as an optimization algorithm on a suitable cost function.</p>
+<p>梯度提升组合多个弱学习器为一个强学习器，以迭代的方式。</p>
+<p>每次迭代时，假设处于第<code>m</code>轮迭代，已存在不完善的模型$F_m$，那么梯度提升算法就是通过构造一个新的弱学习器 $h$，把它加到原模型上去，以期获得一个更好的模型：$F_{m+1} (x) = F_m(x) + h(x)$。 </p>
+<p>如何找到 $h$ 呢？首先一个完美的 $h$ 应该符合 $F_{m+1} (x) = F_m(x) + h(x) = y$，因此，$h(x) = y - F_m(x)$。因此梯度提升算法将拿 $h$ 去尽可能拟合残差 $ y - F_m(x)$.  换句话说，每个$F_{m+1}$ 都尝试去消除前任模型 $F_m$ 留下的误差。</p>
+<p>可以观察到，实际上残差 $ y - F(x)$ 是均方损失函数关于 $F(x)$ 的<strong>负梯度</strong>。<strong>对于其他损失函数，并不好直接求出残差，因此往往使用负梯度来近似残差，或者说每次迭代，我们在残差的方向上前进一小步即可，这一小步即是负梯度</strong>。因此本方法叫梯度提升（不然得叫残差提升了）。</p>
+<p><strong>梯度提升算法：</strong></p>
+<hr>
+<p>input: training set ${(x_{i},y_{i})}_{i=1}^{n}$ ,a differentiable loss function $L(y,F(x))$, number of iterations $M$.</p>
+<p>Algorithm:</p>
+<pre><code>1. Initialize model with a constant value: $F_0(x) = \underset{\gamma}{\arg\min} \sum_{i=1}^n L(y_i, \gamma)$ 
+</code></pre><ol start="2">
+<li><p>For $m=1 \to M$:</p>
+<pre><code>1. Compute so-called pseudo-residuals: $r_{im} = -\left[\frac{\partial L(y_i, F(x_i))}{\partial F(x_i)}\right]_{F(x)=F_{m-1}(x)} \quad \mbox{for } i=1,\ldots,n$ 
+2. Fit a base learner (e.g. tree) $h_m(x)$ to pseudo-residuals, i.e. train it using the training set $ \{(x_i, r_{im})\}_{i=1}^n$.
+3. Compute multiplier $\gamma _{m}$ by solving the following one-dimensional optimization problem: $\gamma_m = \underset{\gamma}{\operatorname{arg\,min}} \sum_{i=1}^n L\left(y_i, F_{m-1}(x_i) + \gamma h_m(x_i)\right).$
+4. Update the model: $F_{m}(x)=F_{{m-1}}(x)+\gamma _{m}h_{m}(x)$
+</code></pre><ol start="3">
+<li>Output $F_M(x)$.</li>
+</ol>
+</li>
+</ol>
+<hr>
+<p>当基学习器是决策树时，又称作梯度提升决策树。下面看两个经典框架的实现。</p>
+<h3 id="classical-framework-XGBoost"><a href="#classical-framework-XGBoost" class="headerlink" title="classical framework: XGBoost"></a>classical framework: XGBoost</h3><h3 id="classical-framework-LightGBM"><a href="#classical-framework-LightGBM" class="headerlink" title="classical framework: LightGBM"></a>classical framework: LightGBM</h3><h2 id="华丽分割线：深度模型"><a href="#华丽分割线：深度模型" class="headerlink" title="华丽分割线：深度模型"></a>华丽分割线：深度模型</h2><ol start="2">
 <li><p>概要</p>
 </li>
 <li><p>FM：降维版本的特征二阶组合</p>
@@ -451,9 +495,9 @@
       
         <div class="post-tags">
           
-            <a href="/tags/CTR/" rel="tag"># CTR</a>
-          
             <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+          
+            <a href="/tags/CTR/" rel="tag"># CTR</a>
           
             <a href="/tags/深度模型/" rel="tag"># 深度模型</a>
           
@@ -613,7 +657,7 @@
             
 
             
-              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题阐述"><span class="nav-number">2.</span> <span class="nav-text">问题阐述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#方法介绍"><span class="nav-number">3.</span> <span class="nav-text">方法介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Logistic-Regression"><span class="nav-number">3.1.</span> <span class="nav-text">Logistic Regression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#模型"><span class="nav-number">3.1.1.</span> <span class="nav-text">模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#策略"><span class="nav-number">3.1.2.</span> <span class="nav-text">策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算法"><span class="nav-number">3.1.3.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码实现"><span class="nav-number">3.1.4.</span> <span class="nav-text">代码实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#Gradient-Boosting-Decision-Tree"><span class="nav-number">3.2.</span> <span class="nav-text">Gradient Boosting Decision Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#Decision-Tree"><span class="nav-number">3.2.1.</span> <span class="nav-text">Decision Tree</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classical-framework-XGBoost"><span class="nav-number">3.2.2.</span> <span class="nav-text">classical framework: XGBoost</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classical-framework-LightGBM"><span class="nav-number">3.2.3.</span> <span class="nav-text">classical framework: LightGBM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：深度模型"><span class="nav-number">3.3.</span> <span class="nav-text">华丽分割线：深度模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：补充"><span class="nav-number">3.4.</span> <span class="nav-text">华丽分割线：补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：前沿论文"><span class="nav-number">3.5.</span> <span class="nav-text">华丽分割线：前沿论文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：各种模型开源实现"><span class="nav-number">3.6.</span> <span class="nav-text">华丽分割线：各种模型开源实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#Motivation"><span class="nav-number">1.</span> <span class="nav-text">Motivation</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#问题阐述"><span class="nav-number">2.</span> <span class="nav-text">问题阐述</span></a></li><li class="nav-item nav-level-1"><a class="nav-link" href="#方法介绍"><span class="nav-number">3.</span> <span class="nav-text">方法介绍</span></a><ol class="nav-child"><li class="nav-item nav-level-2"><a class="nav-link" href="#Logistic-Regression"><span class="nav-number">3.1.</span> <span class="nav-text">Logistic Regression</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#引入"><span class="nav-number">3.1.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#模型"><span class="nav-number">3.1.2.</span> <span class="nav-text">模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#策略"><span class="nav-number">3.1.3.</span> <span class="nav-text">策略</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#算法"><span class="nav-number">3.1.4.</span> <span class="nav-text">算法</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#代码实现"><span class="nav-number">3.1.5.</span> <span class="nav-text">代码实现</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#GBDT方法"><span class="nav-number">3.2.</span> <span class="nav-text">GBDT方法</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#引入-1"><span class="nav-number">3.2.1.</span> <span class="nav-text">引入</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Decision-Tree"><span class="nav-number">3.2.2.</span> <span class="nav-text">Decision Tree</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#特征选择与信息增益"><span class="nav-number">3.2.2.1.</span> <span class="nav-text">特征选择与信息增益</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#决策树生成"><span class="nav-number">3.2.2.2.</span> <span class="nav-text">决策树生成</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#CART算法"><span class="nav-number">3.2.2.3.</span> <span class="nav-text">CART算法</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#代码实现-1"><span class="nav-number">3.2.2.4.</span> <span class="nav-text">代码实现</span></a><ol class="nav-child"><li class="nav-item nav-level-5"><a class="nav-link" href="#决策桩（decision-stump）代码实现"><span class="nav-number">3.2.2.4.1.</span> <span class="nav-text">决策桩（decision stump）代码实现</span></a></li><li class="nav-item nav-level-5"><a class="nav-link" href="#决策树代码实现"><span class="nav-number">3.2.2.4.2.</span> <span class="nav-text">决策树代码实现</span></a></li></ol></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#提升树"><span class="nav-number">3.2.3.</span> <span class="nav-text">提升树</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#梯度提升模型"><span class="nav-number">3.2.4.</span> <span class="nav-text">梯度提升模型</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#Intro"><span class="nav-number">3.2.5.</span> <span class="nav-text">Intro</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classical-framework-XGBoost"><span class="nav-number">3.2.6.</span> <span class="nav-text">classical framework: XGBoost</span></a></li><li class="nav-item nav-level-3"><a class="nav-link" href="#classical-framework-LightGBM"><span class="nav-number">3.2.7.</span> <span class="nav-text">classical framework: LightGBM</span></a></li></ol></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：深度模型"><span class="nav-number">3.3.</span> <span class="nav-text">华丽分割线：深度模型</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：补充"><span class="nav-number">3.4.</span> <span class="nav-text">华丽分割线：补充</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：前沿论文"><span class="nav-number">3.5.</span> <span class="nav-text">华丽分割线：前沿论文</span></a></li><li class="nav-item nav-level-2"><a class="nav-link" href="#华丽分割线：各种模型开源实现"><span class="nav-number">3.6.</span> <span class="nav-text">华丽分割线：各种模型开源实现</span></a></li></ol></li><li class="nav-item nav-level-1"><a class="nav-link" href="#Reference"><span class="nav-number">4.</span> <span class="nav-text">Reference</span></a></li></ol></div>
             
 
           </div>
