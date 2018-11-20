@@ -1,0 +1,853 @@
+<!DOCTYPE html>
+
+
+
+  
+
+
+<html class="theme-next gemini use-motion" lang="">
+<head>
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><meta charset="UTF-8"/>
+<meta http-equiv="X-UA-Compatible" content="IE=edge" />
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1"/>
+<meta name="theme-color" content="#222">
+
+
+
+
+
+
+
+
+
+<meta http-equiv="Cache-Control" content="no-transform" />
+<meta http-equiv="Cache-Control" content="no-siteapp" />
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+  <link href="/lib/fancybox/source/jquery.fancybox.css?v=2.1.5" rel="stylesheet" type="text/css" />
+
+
+
+
+
+
+
+<link href="/lib/font-awesome/css/font-awesome.min.css?v=4.6.2" rel="stylesheet" type="text/css" />
+
+<link href="/css/main.css?v=5.1.4" rel="stylesheet" type="text/css" />
+
+
+  <link rel="apple-touch-icon" sizes="180x180" href="/images/apple-touch-icon-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="32x32" href="/images/favicon-32x32-next.png?v=5.1.4">
+
+
+  <link rel="icon" type="image/png" sizes="16x16" href="/images/favicon-16x16-next.png?v=5.1.4">
+
+
+  <link rel="mask-icon" href="/images/logo.svg?v=5.1.4" color="#222">
+
+
+
+
+
+  <meta name="keywords" content="机器学习,深度模型,模型压缩," />
+
+
+
+
+
+
+
+
+
+
+<meta name="description" content="阅读综述论文及其相关论文量化和二值化 综述提及，网络量化通过减少表示权重的比特位数来压缩原模型。k-means、定长表示、二值表示均属该方法。同时提及这些方法的缺点，1是硬件不友好，2是目前的二值方法与loss解耦合， 论文[6] Compressing Deep Convolutional Networks using Vector Quantization概要：矢量量化方法来压缩CNN的参数，">
+<meta name="keywords" content="机器学习,深度模型,模型压缩">
+<meta property="og:type" content="article">
+<meta property="og:title" content="模型压缩笔记">
+<meta property="og:url" content="http://yoursite.com/2018/11/04/模型压缩笔记/index.html">
+<meta property="og:site_name" content="技术输出">
+<meta property="og:description" content="阅读综述论文及其相关论文量化和二值化 综述提及，网络量化通过减少表示权重的比特位数来压缩原模型。k-means、定长表示、二值表示均属该方法。同时提及这些方法的缺点，1是硬件不友好，2是目前的二值方法与loss解耦合， 论文[6] Compressing Deep Convolutional Networks using Vector Quantization概要：矢量量化方法来压缩CNN的参数，">
+<meta property="og:locale" content="default">
+<meta property="og:updated_time" content="2018-11-20T13:06:51.183Z">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="模型压缩笔记">
+<meta name="twitter:description" content="阅读综述论文及其相关论文量化和二值化 综述提及，网络量化通过减少表示权重的比特位数来压缩原模型。k-means、定长表示、二值表示均属该方法。同时提及这些方法的缺点，1是硬件不友好，2是目前的二值方法与loss解耦合， 论文[6] Compressing Deep Convolutional Networks using Vector Quantization概要：矢量量化方法来压缩CNN的参数，">
+
+
+
+<script type="text/javascript" id="hexo.configurations">
+  var NexT = window.NexT || {};
+  var CONFIG = {
+    root: '/',
+    scheme: 'Gemini',
+    version: '5.1.4',
+    sidebar: {"position":"left","display":"post","offset":12,"b2t":false,"scrollpercent":false,"onmobile":false},
+    fancybox: true,
+    tabs: true,
+    motion: {"enable":true,"async":false,"transition":{"post_block":"fadeIn","post_header":"slideDownIn","post_body":"slideDownIn","coll_header":"slideLeftIn","sidebar":"slideUpIn"}},
+    duoshuo: {
+      userId: '0',
+      author: 'Author'
+    },
+    algolia: {
+      applicationID: '',
+      apiKey: '',
+      indexName: '',
+      hits: {"per_page":10},
+      labels: {"input_placeholder":"Search for Posts","hits_empty":"We didn't find any results for the search: ${query}","hits_stats":"${hits} results found in ${time} ms"}
+    }
+  };
+</script>
+
+
+
+  <link rel="canonical" href="http://yoursite.com/2018/11/04/模型压缩笔记/"/>
+
+
+
+
+
+  <title>模型压缩笔记 | 技术输出</title><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+
+
+
+
+
+
+</head>
+
+<body itemscope itemtype="http://schema.org/WebPage" lang="default">
+
+  
+  
+    
+  
+
+  <!-- hexo-inject:begin --><!-- hexo-inject:end --><div class="container sidebar-position-left page-post-detail">
+    <div class="headband"></div>
+
+    <header id="header" class="header" itemscope itemtype="http://schema.org/WPHeader">
+      <div class="header-inner"><div class="site-brand-wrapper">
+  <div class="site-meta ">
+    
+
+    <div class="custom-logo-site-title">
+      <a href="/"  class="brand" rel="start">
+        <span class="logo-line-before"><i></i></span>
+        <span class="site-title">技术输出</span>
+        <span class="logo-line-after"><i></i></span>
+      </a>
+    </div>
+      
+        <p class="site-subtitle"></p>
+      
+  </div>
+
+  <div class="site-nav-toggle">
+    <button>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+      <span class="btn-bar"></span>
+    </button>
+  </div>
+</div>
+
+<nav class="site-nav">
+  
+
+  
+    <ul id="menu" class="menu">
+      
+        
+        <li class="menu-item menu-item-home">
+          <a href="/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-home"></i> <br />
+            
+            Home
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-about-me">
+          <a href="/about/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-user"></i> <br />
+            
+            About Me
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-tags">
+          <a href="/tags/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-tags"></i> <br />
+            
+            Tags
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-categories">
+          <a href="/categories/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-th"></i> <br />
+            
+            Categories
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-archives">
+          <a href="/archives/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-archive"></i> <br />
+            
+            Archives
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-schedule">
+          <a href="/schedule/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-calendar"></i> <br />
+            
+            Schedule
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-sitemap">
+          <a href="/sitemap.xml" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-sitemap"></i> <br />
+            
+            Sitemap
+          </a>
+        </li>
+      
+        
+        <li class="menu-item menu-item-commonweal">
+          <a href="/404/" rel="section">
+            
+              <i class="menu-item-icon fa fa-fw fa-heartbeat"></i> <br />
+            
+            Commonweal 404
+          </a>
+        </li>
+      
+
+      
+    </ul>
+  
+
+  
+</nav>
+
+
+
+ </div>
+    </header>
+
+    <main id="main" class="main">
+      <div class="main-inner">
+        <div class="content-wrap">
+          <div id="content" class="content">
+            
+
+  <div id="posts" class="posts-expand">
+    
+
+  
+
+  
+  
+  
+
+  <article class="post post-type-normal" itemscope itemtype="http://schema.org/Article">
+  
+  
+  
+  <div class="post-block">
+    <link itemprop="mainEntityOfPage" href="http://yoursite.com/2018/11/04/模型压缩笔记/">
+
+    <span hidden itemprop="author" itemscope itemtype="http://schema.org/Person">
+      <meta itemprop="name" content="rickllyxu">
+      <meta itemprop="description" content="">
+      <meta itemprop="image" content="/images/avatar.gif">
+    </span>
+
+    <span hidden itemprop="publisher" itemscope itemtype="http://schema.org/Organization">
+      <meta itemprop="name" content="技术输出">
+    </span>
+
+    
+      <header class="post-header">
+
+        
+        
+          <h1 class="post-title" itemprop="name headline">模型压缩笔记</h1>
+        
+
+        <div class="post-meta">
+          <span class="post-time">
+            
+              <span class="post-meta-item-icon">
+                <i class="fa fa-calendar-o"></i>
+              </span>
+              
+                <span class="post-meta-item-text">Posted on</span>
+              
+              <time title="Post created" itemprop="dateCreated datePublished" datetime="2018-11-04T21:06:49+08:00">
+                2018-11-04
+              </time>
+            
+
+            
+
+            
+          </span>
+
+          
+
+          
+            
+          
+
+          
+          
+
+          
+
+          
+
+          
+
+        </div>
+      </header>
+    
+
+    
+    
+    
+    <div class="post-body" itemprop="articleBody">
+
+      
+      
+
+      
+        <h1 id="阅读综述论文及其相关论文"><a href="#阅读综述论文及其相关论文" class="headerlink" title="阅读综述论文及其相关论文"></a>阅读综述论文及其相关论文</h1><h3 id="量化和二值化"><a href="#量化和二值化" class="headerlink" title="量化和二值化"></a>量化和二值化</h3><p> 综述提及，网络量化通过减少表示权重的比特位数来压缩原模型。k-means、定长表示、二值表示均属该方法。同时提及这些方法的缺点，1是硬件不友好，2是目前的二值方法与loss解耦合，</p>
+<h4 id="论文-6-Compressing-Deep-Convolutional-Networks-using-Vector-Quantization"><a href="#论文-6-Compressing-Deep-Convolutional-Networks-using-Vector-Quantization" class="headerlink" title="论文[6] Compressing Deep Convolutional Networks using Vector Quantization"></a><strong>论文[6]</strong> Compressing Deep Convolutional Networks using Vector Quantization</h4><p><strong>概要：</strong>矢量量化方法来压缩CNN的参数，主要是解决模型存储问题。在压缩密集连接层的存储方面，矢量量化方法比矩阵分解具有明显优势。并对参数应用k-means聚类。</p>
+<p><strong>做法：</strong>有文献提到，典型网络中，约90%的存储量被密集连接层占用，约90%的运行时间由卷积层占用。这篇论文主要关注减少存储。它研究了基于k-means的标量量化方法、基于</p>
+<ol>
+<li><p>矩阵分解方法：将参数$W \in R^{m \times n}$ 使用SVD分解，即 $W=USV^T$ ，再利用$U$、$V$中的top k 个奇异向量及其在$S$中对应的特征值，来近似 $W$，这样压缩比是 $mn/k(m+n+1)$ .</p>
+</li>
+<li><p>矢量量化方法</p>
+<ol>
+<li><p>二值化：对每个参数使用二值集合中的一个元素来表示。例如二值集合为{-1, 1}</p>
+</li>
+<li><p>基于k-means的标量量化：对 $W \in R^{m \times n}$ 拉成行向量 $w \in R^{1 \times mn}$，然后对每个值使用k均值聚类：<br>$$<br>\min \sum_i^{mn} \sum_j^k ||w_i - c_j||_2^2<br>$$<br>经过聚类后，w中的每个值都赋给了某个聚类中心索引。预测时，取 $c_z$ 来代替 $W_{ij}$ . </p>
+<p>这样，只需要存储索引和码本。而存储一个索引的开销是 $log_2(k)$ bit ，k是类别数，大大低于直接存储整型或浮点型。</p>
+</li>
+<li><p>Product Quantization: 基本思想是将向量空间划分成很多不相交的子空间，然后对每个子空间量化。它有个假定是每个子空间都有冗余，通过量化，可以探索到冗余结构。如何对每个子空间量化呢？做法是：每个子空间都有一个码本，对每个子空间应用k均值聚类，子空间中每个向量使用码本中某行的索引来代替。<br>$$<br>W = [W^1, W^2, …, W^s] \<br>\min \sum_z^m \sum_j^k ||w_z^i - c_j^i||_2^2<br>$$<br>第一个公式是将原矩阵划分成多个子矩阵，第二个公式是对每个子矩阵应用k-means聚类（$w_z^i$ 表示子矩阵 $W^i$ 的第 $z$ 行，$c_j^i$ 表示该子矩阵对应的码本的第 $j$ 行。</p>
+</li>
+<li><p>Residual Quantization：基本思想是，将向量量化到k个聚类中心，然后再递归的量化其残差。比如，将向量 $w_z$ 由 $ c_j^1$ 表示，计算残差 $r_z^1$，再递归量化残差到 $c_j^2$……。因此 $w_z = c_j^1 + … + c_j^t$ .</p>
+</li>
+</ol>
+</li>
+<li><p>实验、讨论：在精度下降很小的情况下，存储压缩得不错。</p>
+</li>
+</ol>
+<h4 id="论文-8-Improving-the-speed-of-neural-networks-on-CPUs"><a href="#论文-8-Improving-the-speed-of-neural-networks-on-CPUs" class="headerlink" title="论文[8] Improving the speed of neural networks on CPUs"></a>论文[8] Improving the speed of neural networks on CPUs</h4><p><strong>概要：</strong> 强调数据布局（data layout），计算的batching，定点数指令 来加速。</p>
+<p><strong>做法：</strong></p>
+<h4 id="论文-9-Deep-Learning-with-Limited-Numerical-Precision"><a href="#论文-9-Deep-Learning-with-Limited-Numerical-Precision" class="headerlink" title="论文[9] Deep Learning with Limited Numerical Precision"></a>论文[9] Deep Learning with Limited Numerical Precision</h4><p><strong>概要：</strong> 研究了有限精度数据表示及其在神经网络上的计算，发现低精度定点情况下，“舍入方案”扮演了重要角色。研究发现，基于<strong>随机舍入</strong>的16位的定点数表示可以减少内存使用和浮点运算，且模型分类精确度损失很小。</p>
+<p><strong>做法：</strong> 将数字使用 &lt;IL, FL&gt; 两部分组成，并对数字使用随机舍入，考虑乘法和加法运算，基于FPGA上在FC、CNN上表现很好。</p>
+<h4 id="论文-10-DEEP-COMPRESSION-COMPRESSING-DEEP-NEURAL-NETWORKS-WITH-PRUNING-TRAINED-QUANTIZATION-AND-HUFFMAN-CODING"><a href="#论文-10-DEEP-COMPRESSION-COMPRESSING-DEEP-NEURAL-NETWORKS-WITH-PRUNING-TRAINED-QUANTIZATION-AND-HUFFMAN-CODING" class="headerlink" title="论文[10] DEEP COMPRESSION: COMPRESSING DEEP NEURAL NETWORKS WITH PRUNING, TRAINED  QUANTIZATION AND HUFFMAN CODING"></a>论文[10] DEEP COMPRESSION: COMPRESSING DEEP NEURAL NETWORKS WITH PRUNING, TRAINED  QUANTIZATION AND HUFFMAN CODING</h4><p><strong>概要：</strong> 剪枝（更少的权值数量）、量化（每个权重更少的位数，强迫权值共享（聚类））、哈弗曼编码。</p>
+<p><strong>做法：</strong>  </p>
+<ol>
+<li>剪枝：基于阈值的剪枝，稀疏存储。</li>
+<li>量化：每层/每个卷积核的权值分别聚类处理。特别的，在<strong>反向更新</strong>过程中，按权值所属类别对梯度进行分组，每组累加在一起，乘上学习率，与中心值相减，得到fine-tuned后的中心值。<ol>
+<li>共享权重的初始化：随机、基于密度、线性初始化。线性初始化照顾到了较大的权重值，所以效果比较好。</li>
+</ol>
+</li>
+<li>哈弗曼coding：对于非均匀分布的值，很适合使用haffman coding。</li>
+</ol>
+<h4 id="论文-11-Towards-the-limit-of-network-quantization"><a href="#论文-11-Towards-the-limit-of-network-quantization" class="headerlink" title="论文[11] Towards the limit of network quantization"></a>论文[11] Towards the limit of network quantization</h4><p><strong>概要：</strong>设计了模型量化的范式：给定压缩率约束下，最小化模型性能损失。文章分析了量化误差对模型损失函数的量化关系，确定hessian-weighted distortion measure 是网络量化优化的目标函数。</p>
+<p><strong>动机：</strong>常规基于k-means聚类的量化方法，没有考虑量化误差对模型性能损失的影响，也没有在给定压缩率约束条件下去优化量化过程。本篇文章将量化过程形式化为优化问题：给定压缩率条件下，最小化模型性能损失。</p>
+<p><strong>贡献：</strong></p>
+<ol>
+<li>导出性能损失可用hessian-weighted distortion measure 来近似，提出 Hessian-weighted k-means clustering 来最小化性能损失。</li>
+<li>量化后再用最优变长二值编码时，可规约为 熵约束标量量化问题。有两个方法可解决此问题，均匀量化算法和迭代算法</li>
+<li>Hessian并不好求。建议在训练中使用AdamSGD时，利用梯度的二阶估计的一些函数。这样不会增加额外计算成本。</li>
+<li>该方法可以一次对网络所有层的参数进行量化，而不是一层接一层的量化。</li>
+</ol>
+<p><strong>做法：</strong></p>
+<ol>
+<li>从损失函数取最小值时推导出delta(损失函数)与 hessian 矩阵的关系，并使用hessian矩阵的对角矩阵来近似hessian矩阵（合理，因为非对角部分并不总是相加，最后求和是个很小的值）。注意到 hessian-weighted distortion measure 适用于模型损失函数是关于参数平方的模型。</li>
+<li>引出关于hessian矩阵的计算，及替代方案。</li>
+<li>所有层的量化，考虑到了层的重要性。</li>
+<li>将量化、编码的问题形式化为entropy-constrained scalar quantization problem. 提出两种解决方案。<strong>有点难。</strong></li>
+</ol>
+<p><strong>质疑：</strong></p>
+<h4 id="论文-12-BinaryConnect-Training-Deep-Neural-Networks-with-binary-weights-during-propagations"><a href="#论文-12-BinaryConnect-Training-Deep-Neural-Networks-with-binary-weights-during-propagations" class="headerlink" title="论文[12] BinaryConnect: Training Deep Neural Networks with binary weights during propagations"></a>论文[12] BinaryConnect: Training Deep Neural Networks with binary weights during propagations</h4><p>概要：二值权重，即将权重限定为2个可能的值，可以代替原来的乘-加运算为简单累加的运算，节省了乘积运算需要的大量资源。引入BinaryConnect。</p>
+<p>动机：乘法需要太多资源</p>
+<p>贡献：证明为什么可工作部分没看懂。</p>
+<p>做法：将权重决定性或随机性的二值化（-1至1的权重二值化时有随机性），</p>
+<p>质疑：</p>
+<h4 id="论文-15-Deep-neural-networks-are-robust-to-weight-binarization-and-other-non-linear-distortions"><a href="#论文-15-Deep-neural-networks-are-robust-to-weight-binarization-and-other-non-linear-distortions" class="headerlink" title="论文[15] Deep neural networks are robust to weight binarization and other non-linear distortions"></a>论文[15] Deep neural networks are robust to weight binarization and other non-linear distortions</h4><p>概要：模型对权重的形变具有很强的鲁棒性，并且二值化只是非线性投影的特例。</p>
+<p>动机：由binaryConnect产生的想法：即模型的鲁棒性。证明该鲁棒性。</p>
+<p>做法：论文先是给了 DNNs with projected weights 的阐述、算法，提出投影的各种函数，再者通过实验来证明了模型权重的形变下仍有鲁棒性。</p>
+<h4 id="论文-16-Loss-aware-binarization-of-deep-networks"><a href="#论文-16-Loss-aware-binarization-of-deep-networks" class="headerlink" title="论文[16] Loss-aware binarization of deep networks"></a>论文[16] Loss-aware binarization of deep networks</h4><p>动机：二值化方法只是简单的矩阵近似，忽略了该方法带来的精度损失。</p>
+<p>概要：提出伴随着对角 Hessian 近似的近似牛顿算法，直接最小化关于二值化后的权重的loss。结果优于已有的二值化方法，并且对深度网络也具有稳定性。</p>
+<p><strong>没看懂！！！</strong></p>
+<h3 id="剪枝和共享"><a href="#剪枝和共享" class="headerlink" title="剪枝和共享"></a>剪枝和共享</h3><p>基于loss函数的Hessian矩阵的权重剪枝方法优于基于阈值的权重剪枝方法。</p>
+<h4 id="论文21-Data-free-Parameter-Pruning-for-Deep-Neural-Networks"><a href="#论文21-Data-free-Parameter-Pruning-for-Deep-Neural-Networks" class="headerlink" title="论文21 Data-free Parameter Pruning for Deep Neural Networks"></a>论文21 Data-free Parameter Pruning for Deep Neural Networks</h4><p>概要：不同于以往一次移除一个权重（连接）的方法，论文提出一次移除一个神经元。论文展示了相似神经元的冗余性。</p>
+<p><strong>需要接着看！！</strong></p>
+<h4 id="论文23-Compressing-Neural-Networks-with-the-Hashing-Trick"><a href="#论文23-Compressing-Neural-Networks-with-the-Hashing-Trick" class="headerlink" title="论文23 Compressing Neural Networks with the Hashing Trick"></a>论文23 Compressing Neural Networks with the Hashing Trick</h4><p>start: 10月14日 end: </p>
+<p>概要：HashedNets使用低代价的哈希函数随机将连接聚到哈希桶中，相同桶中的连接共享一个参数值。</p>
+<p>做法：</p>
+<ol>
+<li><p>feature hashing: 将feature映射到低维空间，节约内存开销。</p>
+<p>input vector $\vec{x} \in R^d$, mapping function $\phi: R^d \to R^k$ , ….</p>
+<p>hash trick不仅省内存，而且还稀疏保持、可以很快计算。最重要的是，<strong>近似保留了内积操作</strong>，即$E[\phi(\vec x)^T \phi(\vec x^{‘})]_{\phi} = \vec x ^T \vec x^{‘}$.   </p>
+</li>
+<li><p>HashedNets</p>
+<p>$V_{ij}^l = w^l_{h^l(i, j)}$  这里V表示虚拟的权值矩阵。它的ij位置的值，等于$w_{h(i,j)}$ . w是长度为K的权值向量，$h(i, j)$ 表示将key (i, j) 映射为一个自然数 ${1, …, K}$ 。</p>
+</li>
+</ol>
+<p>使用一个 low-cost 的哈希函数来将权重放到桶里。</p>
+<h4 id="论文24"><a href="#论文24" class="headerlink" title="论文24"></a>论文24</h4>
+      
+    </div>
+    
+    
+    
+
+    
+
+    
+
+    
+
+    <footer class="post-footer">
+      
+        <div class="post-tags">
+          
+            <a href="/tags/机器学习/" rel="tag"># 机器学习</a>
+          
+            <a href="/tags/深度模型/" rel="tag"># 深度模型</a>
+          
+            <a href="/tags/模型压缩/" rel="tag"># 模型压缩</a>
+          
+        </div>
+      
+
+      
+      
+      
+
+      
+        <div class="post-nav">
+          <div class="post-nav-next post-nav-item">
+            
+              <a href="/2018/09/05/高斯混合模型（聚类）/" rel="next" title="高斯混合模型（聚类）">
+                <i class="fa fa-chevron-left"></i> 高斯混合模型（聚类）
+              </a>
+            
+          </div>
+
+          <span class="post-nav-divider"></span>
+
+          <div class="post-nav-prev post-nav-item">
+            
+          </div>
+        </div>
+      
+
+      
+      
+    </footer>
+  </div>
+  
+  
+  
+  </article>
+
+
+
+    <div class="post-spread">
+      
+    </div>
+  </div>
+
+
+          </div>
+          
+
+
+          
+
+  
+
+
+
+        </div>
+        
+          
+  
+  <div class="sidebar-toggle">
+    <div class="sidebar-toggle-line-wrap">
+      <span class="sidebar-toggle-line sidebar-toggle-line-first"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-middle"></span>
+      <span class="sidebar-toggle-line sidebar-toggle-line-last"></span>
+    </div>
+  </div>
+
+  <aside id="sidebar" class="sidebar">
+    
+    <div class="sidebar-inner">
+
+      
+
+      
+        <ul class="sidebar-nav motion-element">
+          <li class="sidebar-nav-toc sidebar-nav-active" data-target="post-toc-wrap">
+            Table of Contents
+          </li>
+          <li class="sidebar-nav-overview" data-target="site-overview-wrap">
+            Overview
+          </li>
+        </ul>
+      
+
+      <section class="site-overview-wrap sidebar-panel">
+        <div class="site-overview">
+          <div class="site-author motion-element" itemprop="author" itemscope itemtype="http://schema.org/Person">
+            
+              <p class="site-author-name" itemprop="name">rickllyxu</p>
+              <p class="site-description motion-element" itemprop="description"></p>
+          </div>
+
+          <nav class="site-state motion-element">
+
+            
+              <div class="site-state-item site-state-posts">
+              
+                <a href="/archives/">
+              
+                  <span class="site-state-item-count">5</span>
+                  <span class="site-state-item-name">posts</span>
+                </a>
+              </div>
+            
+
+            
+
+            
+              
+              
+              <div class="site-state-item site-state-tags">
+                <a href="/tags/index.html">
+                  <span class="site-state-item-count">4</span>
+                  <span class="site-state-item-name">tags</span>
+                </a>
+              </div>
+            
+
+          </nav>
+
+          
+
+          
+            <div class="links-of-author motion-element">
+                
+                  <span class="links-of-author-item">
+                    <a href="https://github.com/rickllyxu" target="_blank" title="GitHub">
+                      
+                        <i class="fa fa-fw fa-github"></i>GitHub</a>
+                  </span>
+                
+            </div>
+          
+
+          
+          
+
+          
+          
+
+          
+
+        </div>
+      </section>
+
+      
+      <!--noindex-->
+        <section class="post-toc-wrap motion-element sidebar-panel sidebar-panel-active">
+          <div class="post-toc">
+
+            
+              
+            
+
+            
+              <div class="post-toc-content"><ol class="nav"><li class="nav-item nav-level-1"><a class="nav-link" href="#阅读综述论文及其相关论文"><span class="nav-number">1.</span> <span class="nav-text">阅读综述论文及其相关论文</span></a><ol class="nav-child"><li class="nav-item nav-level-3"><a class="nav-link" href="#量化和二值化"><span class="nav-number">1.0.1.</span> <span class="nav-text">量化和二值化</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-6-Compressing-Deep-Convolutional-Networks-using-Vector-Quantization"><span class="nav-number">1.0.1.1.</span> <span class="nav-text">论文[6] Compressing Deep Convolutional Networks using Vector Quantization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-8-Improving-the-speed-of-neural-networks-on-CPUs"><span class="nav-number">1.0.1.2.</span> <span class="nav-text">论文[8] Improving the speed of neural networks on CPUs</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-9-Deep-Learning-with-Limited-Numerical-Precision"><span class="nav-number">1.0.1.3.</span> <span class="nav-text">论文[9] Deep Learning with Limited Numerical Precision</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-10-DEEP-COMPRESSION-COMPRESSING-DEEP-NEURAL-NETWORKS-WITH-PRUNING-TRAINED-QUANTIZATION-AND-HUFFMAN-CODING"><span class="nav-number">1.0.1.4.</span> <span class="nav-text">论文[10] DEEP COMPRESSION: COMPRESSING DEEP NEURAL NETWORKS WITH PRUNING, TRAINED  QUANTIZATION AND HUFFMAN CODING</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-11-Towards-the-limit-of-network-quantization"><span class="nav-number">1.0.1.5.</span> <span class="nav-text">论文[11] Towards the limit of network quantization</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-12-BinaryConnect-Training-Deep-Neural-Networks-with-binary-weights-during-propagations"><span class="nav-number">1.0.1.6.</span> <span class="nav-text">论文[12] BinaryConnect: Training Deep Neural Networks with binary weights during propagations</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-15-Deep-neural-networks-are-robust-to-weight-binarization-and-other-non-linear-distortions"><span class="nav-number">1.0.1.7.</span> <span class="nav-text">论文[15] Deep neural networks are robust to weight binarization and other non-linear distortions</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文-16-Loss-aware-binarization-of-deep-networks"><span class="nav-number">1.0.1.8.</span> <span class="nav-text">论文[16] Loss-aware binarization of deep networks</span></a></li></ol></li><li class="nav-item nav-level-3"><a class="nav-link" href="#剪枝和共享"><span class="nav-number">1.0.2.</span> <span class="nav-text">剪枝和共享</span></a><ol class="nav-child"><li class="nav-item nav-level-4"><a class="nav-link" href="#论文21-Data-free-Parameter-Pruning-for-Deep-Neural-Networks"><span class="nav-number">1.0.2.1.</span> <span class="nav-text">论文21 Data-free Parameter Pruning for Deep Neural Networks</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文23-Compressing-Neural-Networks-with-the-Hashing-Trick"><span class="nav-number">1.0.2.2.</span> <span class="nav-text">论文23 Compressing Neural Networks with the Hashing Trick</span></a></li><li class="nav-item nav-level-4"><a class="nav-link" href="#论文24"><span class="nav-number">1.0.2.3.</span> <span class="nav-text">论文24</span></a></li></ol></li></ol></li></ol></li></ol></div>
+            
+
+          </div>
+        </section>
+      <!--/noindex-->
+      
+
+      
+
+    </div>
+  </aside>
+
+
+        
+      </div>
+    </main>
+
+    <footer id="footer" class="footer">
+      <div class="footer-inner">
+        <div class="copyright">&copy; <span itemprop="copyrightYear">2018</span>
+  <span class="with-love">
+    <i class="fa fa-user"></i>
+  </span>
+  <span class="author" itemprop="copyrightHolder">rickllyxu</span>
+
+  
+</div>
+
+
+  <div class="powered-by">Powered by <a class="theme-link" target="_blank" href="https://hexo.io">Hexo</a></div>
+
+
+
+  <span class="post-meta-divider">|</span>
+
+
+
+  <div class="theme-info">Theme &mdash; <a class="theme-link" target="_blank" href="https://github.com/iissnan/hexo-theme-next">NexT.Gemini</a> v5.1.4</div>
+
+
+
+
+        
+
+
+
+
+
+
+
+        
+      </div>
+    </footer>
+
+    
+      <div class="back-to-top">
+        <i class="fa fa-arrow-up"></i>
+        
+      </div>
+    
+
+    
+
+  </div>
+
+  
+
+<script type="text/javascript">
+  if (Object.prototype.toString.call(window.Promise) !== '[object Function]') {
+    window.Promise = null;
+  }
+</script>
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery/index.js?v=2.1.3"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fastclick/lib/fastclick.min.js?v=1.0.6"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/jquery_lazyload/jquery.lazyload.js?v=1.9.7"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/velocity/velocity.ui.min.js?v=1.2.1"></script>
+  
+
+  
+  
+    <script type="text/javascript" src="/lib/fancybox/source/jquery.fancybox.pack.js?v=2.1.5"></script>
+  
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/utils.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/motion.js?v=5.1.4"></script>
+
+
+
+  
+  
+
+
+  <script type="text/javascript" src="/js/src/affix.js?v=5.1.4"></script>
+
+  <script type="text/javascript" src="/js/src/schemes/pisces.js?v=5.1.4"></script>
+
+
+
+  
+  <script type="text/javascript" src="/js/src/scrollspy.js?v=5.1.4"></script>
+<script type="text/javascript" src="/js/src/post-details.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  <script type="text/javascript" src="/js/src/bootstrap.js?v=5.1.4"></script>
+
+
+
+  
+
+
+  
+
+
+
+
+	
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+
+
+
+
+
+
+
+
+
+
+
+  
+
+
+
+
+
+  
+
+  
+
+  
+
+  
+  
+
+  
+  
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Config({
+        tex2jax: {
+          inlineMath: [ ['$','$'], ["\\(","\\)"]  ],
+          processEscapes: true,
+          skipTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code']
+        }
+      });
+    </script>
+
+    <script type="text/x-mathjax-config">
+      MathJax.Hub.Queue(function() {
+        var all = MathJax.Hub.getAllJax(), i;
+        for (i=0; i < all.length; i += 1) {
+          all[i].SourceElement().parentNode.className += ' has-jax';
+        }
+      });
+    </script>
+    <script type="text/javascript" src="//cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML"></script><!-- hexo-inject:begin --><!-- hexo-inject:end -->
+  
+
+
+  
+
+  
+
+</body>
+</html>
